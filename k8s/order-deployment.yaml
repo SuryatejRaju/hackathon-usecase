@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: us-central1-docker.pkg.dev/hcl-devops-hackathon/hackathon-repo/order-service:latest
+        image: us-central1-docker.pkg.dev/hcl-devops-hackathon-486008/hackathon-repo/order-service:latest
         ports:
         - containerPort: 8080
