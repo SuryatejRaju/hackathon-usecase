@@ -1,0 +1,45 @@
+name: Application CI
+
+on:
+  push:
+    paths:
+      - 'application-service/**'
+      - 'patient-service/**'
+      - 'order-service/**'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker --quiet
+
+      # -------- Application Service --------
+      - name: Build & Push Application Service
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/application-service:latest ./application-service
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/application-service:latest
+
+      # -------- Patient Service --------
+      - name: Build & Push Patient Service
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/patient-service:latest ./patient-service
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/patient-service:latest
+
+      # -------- Order Service --------
+      - name: Build & Push Order Service
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/order-service:latest ./order-service
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/order-service:latest
