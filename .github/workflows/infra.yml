@@ -10,6 +10,10 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: terraform
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,8 +26,26 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Confirm authentication
-        run: gcloud auth list
-
       - name: Set project
         run: gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      # Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Validate configuration
+      - name: Terraform Validate
+        run: terraform validate
+
+      # Plan infrastructure
+      - name: Terraform Plan
+        run: terraform plan -var="project_id=${{ secrets.GCP_PROJECT_ID }}"
+
+      # Apply infrastructure (only on manual run or main branch push)
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -var="project_id=${{ secrets.GCP_PROJECT_ID }}"
